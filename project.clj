@@ -17,4 +17,4 @@
   :pom-addition [:properties
                  [:maven.compiler.source "1.8"]
                  [:maven.compiler.target "1.8"]]
-  :javac-options ["-target" "1.8" "-source" "1.8"])
+  :javac-options ["-target" "1.8" "-source" "1.8" "-encoding" "utf8"])
