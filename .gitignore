@@ -14,3 +14,8 @@ pom.xml.asc
 *.*~
 #*
 .#*
+
+# Eclipse
+.classpath
+.project
+.settings/
