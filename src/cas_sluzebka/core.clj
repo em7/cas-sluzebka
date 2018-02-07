@@ -1,4 +1,8 @@
 (ns cas-sluzebka.core
+  "
+  Calculates the trip time inside and outside the business hours.
+  Example: (`calc-times` <AllTimesTocalc>), returns CalculatedTimes.  
+  "
   (:import [java.time LocalTime]
            [cas_sluzebka CalculatedTime CalculatedTimes TimeToCalc AllTimesToCalc]))
 
@@ -58,7 +62,6 @@
       {:before dep-before-t
        :after  arr-after-t})))
 
-;;; TODO differentiate whether its trip there or return!
 (defn map->CalculatedTime
   "Creates an instance of CalculatedTime from map {:before {:h :m} :after {:h :m}}."
   [m]
@@ -90,27 +93,53 @@
   trip and trip-back parameters should be maps of
   {:before {:h :m} :after {:h :m}}."
   [trip trip-back]
-  (let [before-sum (time-sum (:before trip) (:before trip-back))
-        after-sum ])
-  (CalculatedTimes. (map->CalculatedTime trip)
-                    nil))
+  ;; need to swap before/after threshold for return trip
+  ;; to correctly calculate inside/outside business hours
+  (let [before-sum (time-sum (:before trip) (:after trip-back))
+        after-sum (time-sum (:after trip) (:before trip-back))]
+    (CalculatedTimes. (map->CalculatedTime {:before before-sum :after after-sum})
+                      nil)))
+
+(comment
+  ;; in this case the return value should be 3h before and 3h after 
+  (one-day-trip {:before {:h 1 :m 30} :after {:h 2 :m 15}}
+                {:before {:h 0 :m 45} :after {:h 1 :m 30}})
+  )
 
 
+(defn calc-times
+  "
+  Calculates trip time inside/outside business hours. Handles cases when
+  return trip is done the same day or other day. If return trip is done the
+  same day, returns sum of time before threshold on trip there + time after threshold
+  on trip back in BeforeWorkingTime fields and sum of time after threshold on trip
+  there + time before threshold on trip back in AfterWorkingTime fields.
 
-;; (map->CalculatedTime  {:before {:h 5 :m 4} :after {:h 2 :m 1}})
+  For one two day trips returns time before / after threshold.
 
-;; (defn calc-times
-;;   [all-times]
-;;   (let [trip (.-trip all-times)
-;;         trip-back (.-tripBack all-times)
-;;         calc-trip (calc-time trip)
-;;         calc-back (calc-time trip-back)]
-;;     (if (.-otherDay all-times)
-;;       )))
-
+  Expects an instance of AllTimesToCalc as a parameter, otherwise throws 
+  IllegalArgumentException.
+  Returns an instance of CalculatedTimes.
+  "
+  [all-times]
+  
+  (when-not (instance? AllTimesToCalc all-times)
+    (throw (java.lang.IllegalArgumentException.
+            "all-times must be instance of AllTimesToCalc.")))
+  
+  (let [trip (.-trip all-times)
+        trip-back (.-tripBack all-times)
+        calc-trip (calc-time trip)
+        calc-back (calc-time trip-back)]
+    (if (.-otherDay all-times)
+      (two-day-trip calc-trip calc-back)
+      (one-day-trip calc-trip calc-back))))
 
 ;;; DEBUG
-(def start-thresh {:h 8 :m 0})
-(def end-thresh {:h 16 :m 30})
+(comment 
+  (def start-thresh {:h 8 :m 0})
+  (def end-thresh {:h 16 :m 30})
+
+  )
 
 
