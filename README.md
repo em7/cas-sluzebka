@@ -1,5 +1,18 @@
 # cas-sluzebka
 
+compiling
+
+```
+lein with-profile +win64 uberjar
+```
+
+possible profiles: see project.clj
+
+Emacs:
+```
+M-x set-variable cider-lein-parameters "with-profile +win64 repl :headless :host ::"
+```
+
 FIXME: description
 
 ## Installation
