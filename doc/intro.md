@@ -1,5 +1,7 @@
 # Introduction to source of cas-sluzebka
 
+This project is combined Java/Clojure project. Leiningen is used as a build tool.
+
 ## Clojure
 
 Logic is written in clojure, see `src/cas_sluzebka/core.clj`. Main entry point is function calc-times.
