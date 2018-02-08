@@ -33,6 +33,7 @@ public class Main {
 	private final Logic logic = new Logic();
 	private Display display;
 	private StyledText resultText;
+	private DateTime workTimeBreakDateTime;
 
 	/**
 	 * Launch the application.
@@ -70,8 +71,8 @@ public class Main {
 	 */
 	protected void createContents() {
 		shell = new Shell();
-		shell.setMinimumSize(new Point(355, 480));
-		shell.setSize(355, 480);
+		shell.setMinimumSize(new Point(380, 480));
+		shell.setSize(381, 480);
 		shell.setText("Čas na cestě v/mimo prac. dobu");
 		shell.setLayout(new FillLayout(SWT.HORIZONTAL));
 
@@ -147,7 +148,7 @@ public class Main {
 
 		Composite settingsComposite = new Composite(tabFolder, SWT.NONE);
 		settingsTab.setControl(settingsComposite);
-		settingsComposite.setLayout(new GridLayout(2, false));
+		settingsComposite.setLayout(new GridLayout(3, false));
 
 		Label workTimeStartLabel = new Label(settingsComposite, SWT.NONE);
 		workTimeStartLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -155,6 +156,16 @@ public class Main {
 		workTimeStartLabel.setText("Počátek pracovní doby");
 
 		workTimeStartDateTime = new DateTime(settingsComposite, SWT.BORDER | SWT.TIME | SWT.SHORT);
+		new Label(settingsComposite, SWT.NONE);
+
+		Label workTimeBreakLabel = new Label(settingsComposite, SWT.NONE);
+		workTimeBreakLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		workTimeBreakLabel.setText("Přestávka v práci");
+
+		workTimeBreakDateTime = new DateTime(settingsComposite, SWT.BORDER | SWT.TIME | SWT.SHORT);
+
+		Label workTimeBreakExplain = new Label(settingsComposite, SWT.NONE);
+		workTimeBreakExplain.setText("Délka např. přestávky na oběd.");
 
 		Label workTimeEndLabel = new Label(settingsComposite, SWT.NONE);
 		workTimeEndLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -162,6 +173,7 @@ public class Main {
 		workTimeEndLabel.setText("Konec pracovní doby");
 
 		workTimeEndDateTime = new DateTime(settingsComposite, SWT.BORDER | SWT.TIME | SWT.SHORT);
+		new Label(settingsComposite, SWT.NONE);
 
 		loadDefaults();
 	}
@@ -169,6 +181,9 @@ public class Main {
 	private void loadDefaults() {
 		workTimeStartDateTime.setHours(8);
 		workTimeStartDateTime.setMinutes(0);
+
+		workTimeBreakDateTime.setHours(0);
+		workTimeBreakDateTime.setMinutes(30);
 
 		workTimeEndDateTime.setHours(16);
 		workTimeEndDateTime.setMinutes(30);
@@ -222,7 +237,8 @@ public class Main {
 
 		boolean otherDay = travelBackOtherDayCheckButton.getSelection();
 
-		AllTimesToCalc allTimes = new AllTimesToCalc(trip, tripBack, otherDay);
+		AllTimesToCalc allTimes = new AllTimesToCalc(trip, tripBack, otherDay,
+				workTimeBreakDateTime.getHours(), workTimeBreakDateTime.getMinutes());
 		logic.calculateTimesAsync(allTimes, (calcOrEx) -> {
 			display.asyncExec(() -> displayTimesOrException(calcOrEx));
 		});
@@ -247,26 +263,35 @@ public class Main {
 	private void displayCalculatedTimes(CalculatedTimes calculatedTimes) {
 		if (calculatedTimes.day2 == null) {
 			resultText.setText(String.format(//
-					"1. den mimo pracovní dobu: %d:%d\n"//
-							+ "1. den v pracovní době: %d:%d\n", //
+					"Mimo pracovní dobu: %d:%d2\n"//
+							+ "V pracovní době: %d:%d2\n"//
+							+ "Čas na projektu %d:%d2",//
 					calculatedTimes.day1.hoursBeforeWorkingTime, //
 					calculatedTimes.day1.minutesBeforeWorkingTime, //
 					calculatedTimes.day1.hoursAfterWorkingTime, //
-					calculatedTimes.day1.minutesAfterWorkingTime));
+					calculatedTimes.day1.minutesAfterWorkingTime,//
+					calculatedTimes.day1.projectWorkingTimeHours,//
+					calculatedTimes.day1.projectWorkingTimeMinutes));
 		} else {
 			resultText.setText(String.format(//
-					"1. den mimo pracovní dobu: %d:%d\n"//
-							+ "1. den v pracovní době: %d:%d\n"//
-							+ "2. den mimo pracovní dobu: %d:%d\n"//
-							+ "2. den v pracovní době: %d:%d\n", //
+					"1. den mimo pracovní dobu: %d:%d2\n"//
+							+ "1. den v pracovní době: %d:%d2\n"//
+							+ "1. den čas na projektu %d:%d2\n"//
+							+ "2. den mimo pracovní dobu: %d:%d2\n"//
+							+ "2. den v pracovní době: %d:%d2\n"//
+							+ "2. den čas na projektu %d:%d2\n", //
 					calculatedTimes.day1.hoursBeforeWorkingTime, //
 					calculatedTimes.day1.minutesBeforeWorkingTime, //
 					calculatedTimes.day1.hoursAfterWorkingTime, //
-					calculatedTimes.day1.minutesAfterWorkingTime, //
+					calculatedTimes.day1.minutesAfterWorkingTime,//
+					calculatedTimes.day1.projectWorkingTimeHours,//
+					calculatedTimes.day1.projectWorkingTimeMinutes,//
 					calculatedTimes.day2.hoursAfterWorkingTime, //
 					calculatedTimes.day2.minutesAfterWorkingTime, //
 					calculatedTimes.day2.hoursBeforeWorkingTime, //
-					calculatedTimes.day2.minutesBeforeWorkingTime));
+					calculatedTimes.day2.minutesBeforeWorkingTime,//
+					calculatedTimes.day2.projectWorkingTimeHours,//
+					calculatedTimes.day2.projectWorkingTimeMinutes));
 		}
 	}
 
