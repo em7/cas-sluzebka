@@ -49,7 +49,8 @@ public class Main {
 	}
 
 	/**
-	 * Open the window.
+	 * Open the window. This method is blocking and implements
+	 * the event loop.
 	 */
 	public void open() {
 		display = Display.getDefault();

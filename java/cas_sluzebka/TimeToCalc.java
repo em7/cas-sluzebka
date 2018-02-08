@@ -1,7 +1,7 @@
 package cas_sluzebka;
 
 /**
- * Holds times needed for performing the calculation
+ * Holds times needed for performing one calculation.
  */
 public class TimeToCalc {
 

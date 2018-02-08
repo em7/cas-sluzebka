@@ -18,7 +18,7 @@ public class Logic {
 	IFn calcTimesFn;
 
 	/**
-	 * Initializes the logic in a background thread.
+	 * Initializes the logic. This method is thread-safe.
 	 */
 	public synchronized void initialize() {
 		if (! initialized.get() || calcTimesFn == null) {
@@ -43,7 +43,12 @@ public class Logic {
 	}
 
 	/**
-	 * Asynchronously calculates the value.
+	 * Asynchronously calculates the value. Is the same as
+	 * calling {@link #calculateTimes(AllTimesToCalc)} but does
+	 * it in a background thread.
+	 *
+	 * Callback is called when {@link #calculateTimes(AllTimesToCalc)}
+	 * finish, on the background thread.
 	 */
 	public void calculateTimesAsync(final AllTimesToCalc timesToCalc,
 			final Consumer<CalculatedTimesOrException> callback) {
