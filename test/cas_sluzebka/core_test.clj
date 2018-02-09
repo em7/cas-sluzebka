@@ -17,13 +17,13 @@
         times-same (AllTimesToCalc. time1
                                     time2
                                     false
-                                    0 ;TODO
-                                    0)
+                                    1
+                                    30)
         times-other (AllTimesToCalc. time1
                                      time2
                                      true
-                                     0 ;TODO
-                                     0)]
+                                     1
+                                     30)]
     (testing "times the same day"
       (let [times (calc-times times-same)
             t-d1 (.-day1 times)
@@ -31,11 +31,15 @@
             hb1 (.-hoursBeforeWorkingTime t-d1)
             mb1 (.-minutesBeforeWorkingTime t-d1)
             ha1 (.-hoursAfterWorkingTime t-d1)
-            ma1 (.-minutesAfterWorkingTime t-d1)]
+            ma1 (.-minutesAfterWorkingTime t-d1)
+            hp1 (.-projectWorkingTimeHours t-d1)
+            mp1 (.-projectWorkingTimeMinutes t-d1)]
         (is (= 4 hb1))
         (is (= 30 mb1))
         (is (= 2 ha1))
         (is (= 30 ma1))
+        (is (= 4 hp1))
+        (is (= 30 mp1))
         (is (nil? t-d2))))
 
     (testing "times other day"
@@ -46,18 +50,26 @@
             mb1 (.-minutesBeforeWorkingTime t-d1)
             ha1 (.-hoursAfterWorkingTime t-d1)
             ma1 (.-minutesAfterWorkingTime t-d1)
+            hp1 (.-projectWorkingTimeHours t-d1)
+            mp1 (.-projectWorkingTimeMinutes t-d1)
             hb2 (.-hoursBeforeWorkingTime t-d2)
             mb2 (.-minutesBeforeWorkingTime t-d2)
             ha2 (.-hoursAfterWorkingTime t-d2)
-            ma2 (.-minutesAfterWorkingTime t-d2)]
+            ma2 (.-minutesAfterWorkingTime t-d2)
+            hp2 (.-projectWorkingTimeHours t-d2)
+            mp2 (.-projectWorkingTimeMinutes t-d2)]
         (is (= 2 hb1))
         (is (= 30 mb1))
         (is (= 1 ha1))
         (is (= 0 ma1))
+        (is (= 6 hp1))
+        (is (= 0 mp1))
         (is (= 1 hb2))
         (is (= 30 mb2))
         (is (= 2 ha2))
-        (is (= 0 ma2))))
+        (is (= 0 ma2))
+        (is (= 5 hp2))
+        (is (= 30 mp2))))
 
     (testing "for parameter should throw"
       (is (thrown? IllegalArgumentException (calc-times nil)))
