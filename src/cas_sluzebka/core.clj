@@ -3,76 +3,53 @@
   Calculates the trip time inside and outside the business hours.
   Example: (`calc-times` <AllTimesTocalc>), returns CalculatedTimes.  
   "
+  (:require [cas-sluzebka.time :as time])
   (:import [java.time LocalTime]
            [cas_sluzebka CalculatedTime CalculatedTimes TimeToCalc AllTimesToCalc]))
 
-(def zero-time {:h 0 :m 0})
-
-(defn- diff-local
-  "Calculates difference between two LocalTimes. Return type is local time.
-  Calculates only with minutes and seconds."
-  [lt1 lt2]
-  (-> (.minusHours lt1 (.getHour lt2))
-      (.minusMinutes (.getMinute lt2))))
-
-(defn time-before
-  "Calculates time before threshold. Expects maps with keys :h :m, returns
-  such map. If time is after threshold, returns {:h 0 :m 0}."
-  [threshold time]
-  (let [th-local (LocalTime/of (:h threshold) (:m threshold))
-        ti-local (LocalTime/of (:h time) (:m time))]
-    (if (.isBefore th-local ti-local)
-      zero-time
-      (let [diff (diff-local th-local ti-local)]
-        {:h (.getHour diff) :m (.getMinute diff)}))))
-
-(defn time-after
-  "Calculates time after threshold. Expects maps with keys :h :m,
-  returns such map. If time is before threshold, returns {:h 0 :m 0}."
-  [threshold time]
-  (time-before time threshold))
-
-(defn time-equal
-  "Returns true if times are equal. Expects times to be map with :h and :m keys."
-  [t1 t2]
-  (and (= (:h t1) (:h t2))
-       (= (:m t1) (:m t2))))
-
-(defn time-sum
-  "Returns a sum of times. Expects times to be a map {:h :m}."
-  [t1 t2]
-  (let [loc (-> (LocalTime/of (:h t1) (:m t1))
-                (.plusHours (:h t2))
-                (.plusMinutes (:m t2)))]
-    {:h (.getHour loc) :m (.getMinute loc)}))
-
 (defn calc-trip
   "Calculates travel times before and after business hours threshold for one trip.
-  Returns a map of times with keys :before and :after. Expects times to be map with
-  :h and :m keys. thr is threshold between inside/outside business hours, dep 
+  Returns a map of times with keys :before and :after. Expects times to instances of
+  time/Time. thr is threshold between inside/outside business hours, dep 
   is departure and arr is arrival."
   [thr dep arr]
-  (let [arr-after-t  (time-after thr arr)
-        dep-before-t (time-before thr dep)]
-    (condp time-equal zero-time
-      arr-after-t  {:before (time-after dep arr) ;arrived before threshold
-                    :after  zero-time}
-      dep-before-t {:before zero-time   ;departed after threshold
-                    :after  (time-after dep arr)}
+  (let [arr-after-t  (time/after thr arr)
+        dep-before-t (time/before thr dep)]
+    (condp time/equal? time/zero
+      arr-after-t  {:before (time/after dep arr) ;arrived before threshold
+                    :after  time/zero}
+      dep-before-t {:before time/zero   ;departed after threshold
+                    :after  (time/after dep arr)}
       {:before dep-before-t
        :after  arr-after-t})))
 
+;; TODO
+(defn project-time
+  "Calculates time which needs to be billed to project.
+  Breaks is the total sum of work-time breaks (e.g. lunch breaks)
+  passed as instance of time/Time.
+  For start and end expects map with keys :h :m when the business
+  hours start and end. Travel-inside should be sum 
+  of trave time inside business hours as a map with keys :h :m."
+  [& {:keys [breaks start end travel-inside]}]
+  
+  
+  )
+
 (defn map->CalculatedTime
-  "Creates an instance of CalculatedTime from map {:before {:h :m} :after {:h :m}}."
+  "Creates an instance of CalculatedTime from map {:before time/Time 
+  :after time/Time }."
   [m]
   (CalculatedTime. (get-in m [:before :h])
                    (get-in m [:before :m])
                    (get-in m [:after :h])
-                   (get-in m [:after :m])))
+                   (get-in m [:after :m])
+                   0 ; TODO
+                   0))
 
 (defn calc-time
   "Calculates times for one trip. Expects TimeToCalc, returns map
-  with keys {:before {:h :m} :after {:h :m}}."
+  with keys {:before time/Time :after time/Time}."
   [to-calc]
   (let [dep {:h (.-departureHour to-calc) :m (.-departureMinute to-calc)}
         arr {:h (.-arrivalHour to-calc) :m (.-arrivalMinute to-calc)}
@@ -82,7 +59,7 @@
 (defn two-day-trip
   "Returns instance of CalculatedTimes which represents at least two days
   trip. trip and trip-back parameters should be maps of 
-  {:before {:h :m} :after {:h :m}}."
+  {:before time/Time :after time/Time}."
   [trip trip-back]
   (CalculatedTimes. (map->CalculatedTime trip)
                     (map->CalculatedTime trip-back)))
@@ -91,12 +68,12 @@
   "Returns instance of CalculatedTimes which represents one day trip.
   The trip times are summed and returned in field day1.
   trip and trip-back parameters should be maps of
-  {:before {:h :m} :after {:h :m}}."
+  {:before time/Time :after time/Time}."
   [trip trip-back]
   ;; need to swap before/after threshold for return trip
   ;; to correctly calculate inside/outside business hours
-  (let [before-sum (time-sum (:before trip) (:after trip-back))
-        after-sum (time-sum (:after trip) (:before trip-back))]
+  (let [before-sum (time/+ (:before trip) (:after trip-back))
+        after-sum  (time/+ (:after trip) (:before trip-back))]
     (CalculatedTimes. (map->CalculatedTime {:before before-sum :after after-sum})
                       nil)))
 
@@ -127,10 +104,12 @@
     (throw (java.lang.IllegalArgumentException.
             "all-times must be instance of AllTimesToCalc.")))
   
-  (let [trip (.-trip all-times)
-        trip-back (.-tripBack all-times)
-        calc-trip (calc-time trip)
-        calc-back (calc-time trip-back)]
+  (let [trip       (.-trip all-times)
+        trip-back  (.-tripBack all-times)
+        break-time {:h (.-breakTimeHours all-times)
+                    :m (.-breakTimeMins all-times)}
+        calc-trip  (calc-time trip)
+        calc-back  (calc-time trip-back)]
     (if (.-otherDay all-times)
       (two-day-trip calc-trip calc-back)
       (one-day-trip calc-trip calc-back))))

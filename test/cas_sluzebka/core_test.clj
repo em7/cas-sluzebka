@@ -1,58 +1,42 @@
 (ns cas-sluzebka.core-test
   (:require [clojure.test :refer :all]
-            [cas-sluzebka.core :refer :all])
+            [cas-sluzebka.core :refer :all]
+            [cas-sluzebka.time :as time])
   (:import [cas_sluzebka CalculatedTime CalculatedTimes TimeToCalc AllTimesToCalc]))
 
-(deftest time-before-test
-  (let [th {:h 8 :m 0}]
-    (testing "returns diff when time is before"
-      (let [diff (time-before th {:h 4 :m 30})]
-        (is (= 3 (:h diff)))
-        (is (= 30 (:m diff)))))
-    (testing "returns 0 when time is equal to threshold"
-      (let [diff (time-before th th)]
-        (is (= 0 (:h diff)))
-        (is (= 0 (:m diff)))))
-    (testing "returns 0 when time is after threshold"
-      (let [diff (time-before th {:h 9 :m 30})]
-        (is (= 0 (:h diff)))
-        (is (= 0 (:m diff)))))))
-
-(deftest time-after-test
-  (let [th {:h 8 :m 0}]
-    (testing "returns diff when time is after"
-      (let [diff (time-after th {:h 9 :m 15})]
-        (is (= 1 (:h diff)))
-        (is (= 15 (:m diff)))))
-    (testing "returns 0 when time is equal to threshold"
-      (let [diff (time-after th th)]
-        (is (= 0 (:h diff)))
-        (is (= 0 (:m diff)))))
-    (testing "returns 0 when time is before threshold"
-      (let [diff (time-after th {:h 6 :m 30})]
-        (is (= 0 (:h diff)))
-        (is (= 0 (:m diff)))))))
 
 (deftest calc-trip-test
-  (let [th {:h 8 :m 30}]
+  (let [th (time/map->Time {:h 8 :m 30})]
     (testing "dep and arr before threshold"
-      (let [calc   (calc-trip th {:h 6 :m 0} {:h 8 :m 15})
+      (let [calc   (calc-trip th
+                              (time/map->Time {:h 6 :m 0})
+                              (time/map->Time {:h 8 :m 15}))
             before (:before calc)
             after  (:after calc)]
-        (is (time-equal zero-time after))
-        (is (time-equal {:h 2 :m 15} before))))
+        (is (time/equal? time/zero after))
+        (is (time/equal? (time/map->Time {:h 2 :m 15}) before))))
     (testing "dep and arr after threshold"
-      (let [calc   (calc-trip th {:h 8 :m 45} {:h 9 :m 15})
+      (let [calc   (calc-trip th 
+                              (time/map->Time {:h 8 :m 45})
+                              (time/map->Time {:h 9 :m 15}))
             before (:before calc)
             after  (:after calc)]
-        (is (time-equal zero-time before))
-        (is (time-equal {:h 0 :m 30} after))))
+        (is (time/equal? time/zero before))
+        (is (time/equal? (time/map->Time {:h 0 :m 30}) after))))
     (testing "deb before threshold and arr after threshold"
       (let [calc   (calc-trip th {:h 6 :m 0} {:h 10 :m 30})
             before (:before calc)
             after  (:after calc)]
-        (is (time-equal before {:h 2 :m 30}))
-        (is (time-equal after {:h 2 :m 0}))))))
+        (is (time/equal? before (time/map->Time {:h 2 :m 30})))
+        (is (time/equal? after (time/map->Time {:h 2 :m 0})))))))
+
+(deftest project-time-test
+  (let [breaks (time/map->Time {:h 1 :m 30})
+        start  (time/map->Time {:h 8 :m 0})
+        end    (time/map->Time {:h 16 :m 30})]
+    (testing "no breaks and travel time should return whole time"
+      (let [expected (time/map->Time {:h 8 :m 30})
+            actual   (project-time time/zero start end time/zero)]))))
 
 (deftest calc-times-test
   (let [time1 (TimeToCalc. 5 30
@@ -63,10 +47,14 @@
                            16 30)
         times-same (AllTimesToCalc. time1
                                     time2
-                                    false)
+                                    false
+                                    0 ;TODO
+                                    0)
         times-other (AllTimesToCalc. time1
                                      time2
-                                     true)]
+                                     true
+                                     0 ;TODO
+                                     0)]
     (testing "times the same day"
       (let [times (calc-times times-same)
             t-d1 (.-day1 times)
