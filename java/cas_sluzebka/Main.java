@@ -17,6 +17,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 
 public class Main {
@@ -139,6 +141,8 @@ public class Main {
 
 		resultText = new StyledText(grpVsledek, SWT.BORDER | SWT.WRAP);
 		resultText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		// TODO fix font
+		resultText.setFont(new Font(display, "Courier New", 10, SWT.NORMAL));
 
 		Label lblNewLabel = new Label(grpVsledek, SWT.NONE);
 		lblNewLabel.setText("Verze 1.0.0 (180207-010)");
@@ -263,9 +267,9 @@ public class Main {
 	private void displayCalculatedTimes(CalculatedTimes calculatedTimes) {
 		if (calculatedTimes.day2 == null) {
 			resultText.setText(String.format(//
-					"Mimo pracovní dobu: %d:%d2\n"//
-							+ "V pracovní době: %d:%d2\n"//
-							+ "Čas na projektu %d:%d2",//
+					          "Mimo pracovní dobu: %d:%02d\n"//
+							+ "V pracovní době:    %d:%02d\n"//
+							+ "Čas na projektu:    %d:%02d",//
 					calculatedTimes.day1.hoursBeforeWorkingTime, //
 					calculatedTimes.day1.minutesBeforeWorkingTime, //
 					calculatedTimes.day1.hoursAfterWorkingTime, //
@@ -274,12 +278,12 @@ public class Main {
 					calculatedTimes.day1.projectWorkingTimeMinutes));
 		} else {
 			resultText.setText(String.format(//
-					"1. den mimo pracovní dobu: %d:%d2\n"//
-							+ "1. den v pracovní době: %d:%d2\n"//
-							+ "1. den čas na projektu %d:%d2\n"//
-							+ "2. den mimo pracovní dobu: %d:%d2\n"//
-							+ "2. den v pracovní době: %d:%d2\n"//
-							+ "2. den čas na projektu %d:%d2\n", //
+					          "1. den mimo pracovní dobu: %d:%02d\n"//
+							+ "1. den v pracovní době:    %d:%02d\n"//
+							+ "1. den čas na projektu     %d:%02d\n"//
+							+ "2. den mimo pracovní dobu: %d:%02d\n"//
+							+ "2. den v pracovní době:    %d:%02d\n"//
+							+ "2. den čas na projektu     %d:%02d\n", //
 					calculatedTimes.day1.hoursBeforeWorkingTime, //
 					calculatedTimes.day1.minutesBeforeWorkingTime, //
 					calculatedTimes.day1.hoursAfterWorkingTime, //

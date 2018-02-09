@@ -12,7 +12,8 @@
   
   :main cas_sluzebka.Main
   :target-path "target/%s"
-  :profiles {:win64 {:dependencies [[cas-sluzebka/swt.win64 "4.7.2"]]}
+  :profiles {:uberjar {:aot :all}
+             :win64 {:dependencies [[cas-sluzebka/swt.win64 "4.7.2"]]}
              :linux-gtk64 {:dependencies [[cas-sluzebka/swt.linux.gtk64 "4.7.2"]]}}
   :pom-addition [:properties
                  [:maven.compiler.source "1.8"]
