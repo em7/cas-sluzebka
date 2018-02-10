@@ -3,6 +3,8 @@
 Program for counting trip time inside/outside business hours. This utility can be useful if you travel for business trips and travel time is sometimes inside and sometimes outside your business hours. Since these times need to be invoiced separately, you need to count them.
 
 This utility is currently available only in Czech language.
+![Windows screenshot](https://raw.githubusercontent.com/em7/cas-sluzebka/master/doc/windows-screen-1.0.0.png)
+![Linux screenshot](https://raw.githubusercontent.com/em7/cas-sluzebka/master/doc/linux-screen-1.0.0.png)
 
 ## Latest downloads
 
