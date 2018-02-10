@@ -11,11 +11,11 @@ This utility is currently available only in Czech language.
 
 **NOTE** This program needs Java 8 or better to run. You can get it [e.g. from this site](http://java.com).
 
-Latest version is 1.0.0.
+Latest version is [1.0.0](https://github.com/em7/cas-sluzebka/releases/tag/v1.0.0).
 
-* Windows 64 bit
-* Linux 64 bit
-* MacOS 64 bit
+* [Windows 64 bit](https://github.com/em7/cas-sluzebka/releases/download/v1.0.0/cas-sluzebka-1.0.0-windows.zip)
+* [Linux 64 bit](https://github.com/em7/cas-sluzebka/releases/download/v1.0.0/cas-sluzebka-1.0.0-linux-gtk.tar.gz)
+* [MacOS 64 bit](https://github.com/em7/cas-sluzebka/releases/download/v1.0.0/cas-sluzebka-1.0.0-macosx.zip)
 
 ## How helpful it is?
 
