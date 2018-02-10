@@ -7,7 +7,7 @@ Windows: `lein with-profile +win64 uberjar`
 
 Linux: `lein with-profile +linux-gtk64 uberjar`
 
-Mac: `lein with-profile +macoxs-cocoa64 uberjar`
+Mac: `lein with-profile +macosx-cocoa64 uberjar`
 
 This create a self-contained executable jar file in `target/uberjar`. Directory `launchers` contains platform specific launch scripts. Rename the jar file to match the name in script and use appropriate launcher.
 
