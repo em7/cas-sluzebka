@@ -30,7 +30,7 @@ Pissed off tax: (2,100 trips x 7m) + 11.6h = 14,700m + 11.6h = 245h = 256.6h
 Time spent calculating times by utility: 2,100 x 5s = 10,500s = 175m = 3h
 Time savings: 253,6h
 
-Average month salary in Czech Republic (Prague, 3rd quartal 2017): CZK 36,312
+Average month salary in Czech Republic (Prague, 3rd quarter 2017): CZK 36,312
 Employer cost for gross salary of CZK 36,312: CZK 48,659
 Since the employee can't do something useful, calculate total cost. Approx salary cost x 3:
 CZK 48,659 x 3 = CZK 145,977.
