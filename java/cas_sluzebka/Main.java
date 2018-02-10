@@ -4,6 +4,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -15,11 +17,9 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Point;
 
 public class Main {
 
@@ -35,7 +35,7 @@ public class Main {
 	private final Logic logic = new Logic();
 	private Display display;
 	private StyledText resultText;
-	private DateTime workTimeBreakDateTime;
+	private Spinner workTimeBreakMinSpinner;
 
 	/**
 	 * Launch the application.
@@ -52,8 +52,7 @@ public class Main {
 	}
 
 	/**
-	 * Open the window. This method is blocking and implements
-	 * the event loop.
+	 * Open the window. This method is blocking and implements the event loop.
 	 */
 	public void open() {
 		display = Display.getDefault();
@@ -125,12 +124,12 @@ public class Main {
 
 		travelBackArrivalTimeDateTime = new DateTime(travelBackGroup, SWT.BORDER | SWT.TIME | SWT.SHORT);
 
-		Group grpVsledek = new Group(calculationComposite, SWT.NONE);
-		grpVsledek.setLayout(new GridLayout(1, false));
-		grpVsledek.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		grpVsledek.setText("Výsledek");
+		Group resultGroup = new Group(calculationComposite, SWT.NONE);
+		resultGroup.setLayout(new GridLayout(1, false));
+		resultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		resultGroup.setText("Výsledek");
 
-		Button calculateButton = new Button(grpVsledek, SWT.NONE);
+		Button calculateButton = new Button(resultGroup, SWT.NONE);
 		calculateButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -139,12 +138,12 @@ public class Main {
 		});
 		calculateButton.setText("Spočítat");
 
-		resultText = new StyledText(grpVsledek, SWT.BORDER | SWT.WRAP);
+		resultText = new StyledText(resultGroup, SWT.BORDER | SWT.WRAP);
 		resultText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		// TODO fix font
 		resultText.setFont(new Font(display, "Courier New", 10, SWT.NORMAL));
 
-		Label lblNewLabel = new Label(grpVsledek, SWT.NONE);
+		Label lblNewLabel = new Label(resultGroup, SWT.NONE);
 		lblNewLabel.setText("Verze 1.0.0 (180207-010)");
 
 		TabItem settingsTab = new TabItem(tabFolder, SWT.NONE);
@@ -152,7 +151,7 @@ public class Main {
 
 		Composite settingsComposite = new Composite(tabFolder, SWT.NONE);
 		settingsTab.setControl(settingsComposite);
-		settingsComposite.setLayout(new GridLayout(3, false));
+		settingsComposite.setLayout(new GridLayout(2, false));
 
 		Label workTimeStartLabel = new Label(settingsComposite, SWT.NONE);
 		workTimeStartLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -160,16 +159,6 @@ public class Main {
 		workTimeStartLabel.setText("Počátek pracovní doby");
 
 		workTimeStartDateTime = new DateTime(settingsComposite, SWT.BORDER | SWT.TIME | SWT.SHORT);
-		new Label(settingsComposite, SWT.NONE);
-
-		Label workTimeBreakLabel = new Label(settingsComposite, SWT.NONE);
-		workTimeBreakLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		workTimeBreakLabel.setText("Přestávka v práci");
-
-		workTimeBreakDateTime = new DateTime(settingsComposite, SWT.BORDER | SWT.TIME | SWT.SHORT);
-
-		Label workTimeBreakExplain = new Label(settingsComposite, SWT.NONE);
-		workTimeBreakExplain.setText("Délka např. přestávky na oběd.");
 
 		Label workTimeEndLabel = new Label(settingsComposite, SWT.NONE);
 		workTimeEndLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -177,7 +166,26 @@ public class Main {
 		workTimeEndLabel.setText("Konec pracovní doby");
 
 		workTimeEndDateTime = new DateTime(settingsComposite, SWT.BORDER | SWT.TIME | SWT.SHORT);
+
+		Label workTimeBreakLabel = new Label(settingsComposite, SWT.NONE);
+		workTimeBreakLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		workTimeBreakLabel.setText("Přestávka v práci");
+		
+		Composite workTimeBreakPanel = new Composite(settingsComposite, SWT.NONE);
+		GridLayout gl_workTimeBreakPanel = new GridLayout(2, false);
+		gl_workTimeBreakPanel.marginWidth = 0;
+		workTimeBreakPanel.setLayout(gl_workTimeBreakPanel);
+		
+		workTimeBreakMinSpinner = new Spinner(workTimeBreakPanel, SWT.BORDER);
+		workTimeBreakMinSpinner.setMaximum(1440);
+		workTimeBreakMinSpinner.setSelection(30);
+		
+		Label workTimeBreakUnitLabel = new Label(workTimeBreakPanel, SWT.NONE);
+		workTimeBreakUnitLabel.setText("minut");
 		new Label(settingsComposite, SWT.NONE);
+
+		Label workTimeBreakExplain = new Label(settingsComposite, SWT.NONE);
+		workTimeBreakExplain.setText("Délka např. přestávky na oběd.");
 
 		loadDefaults();
 	}
@@ -185,9 +193,6 @@ public class Main {
 	private void loadDefaults() {
 		workTimeStartDateTime.setHours(8);
 		workTimeStartDateTime.setMinutes(0);
-
-		workTimeBreakDateTime.setHours(0);
-		workTimeBreakDateTime.setMinutes(30);
 
 		workTimeEndDateTime.setHours(16);
 		workTimeEndDateTime.setMinutes(30);
@@ -240,9 +245,12 @@ public class Main {
 				workTimeEndDateTime.getMinutes());
 
 		boolean otherDay = travelBackOtherDayCheckButton.getSelection();
+		
+		int workTimeBreakHours = workTimeBreakMinSpinner.getSelection() / 60;
+		int workTimebreakMins = workTimeBreakMinSpinner.getSelection() % 60;
 
-		AllTimesToCalc allTimes = new AllTimesToCalc(trip, tripBack, otherDay,
-				workTimeBreakDateTime.getHours(), workTimeBreakDateTime.getMinutes());
+		AllTimesToCalc allTimes = new AllTimesToCalc(trip, tripBack, otherDay, workTimeBreakHours,
+				workTimebreakMins);
 		logic.calculateTimesAsync(allTimes, (calcOrEx) -> {
 			display.asyncExec(() -> displayTimesOrException(calcOrEx));
 		});
@@ -267,18 +275,18 @@ public class Main {
 	private void displayCalculatedTimes(CalculatedTimes calculatedTimes) {
 		if (calculatedTimes.day2 == null) {
 			resultText.setText(String.format(//
-					          "Mimo pracovní dobu: %d:%02d\n"//
+					"Mimo pracovní dobu: %d:%02d\n"//
 							+ "V pracovní době:    %d:%02d\n"//
-							+ "Čas na projektu:    %d:%02d",//
+							+ "Čas na projektu:    %d:%02d", //
 					calculatedTimes.day1.hoursBeforeWorkingTime, //
 					calculatedTimes.day1.minutesBeforeWorkingTime, //
 					calculatedTimes.day1.hoursAfterWorkingTime, //
-					calculatedTimes.day1.minutesAfterWorkingTime,//
-					calculatedTimes.day1.projectWorkingTimeHours,//
+					calculatedTimes.day1.minutesAfterWorkingTime, //
+					calculatedTimes.day1.projectWorkingTimeHours, //
 					calculatedTimes.day1.projectWorkingTimeMinutes));
 		} else {
 			resultText.setText(String.format(//
-					          "1. den mimo pracovní dobu: %d:%02d\n"//
+					"1. den mimo pracovní dobu: %d:%02d\n"//
 							+ "1. den v pracovní době:    %d:%02d\n"//
 							+ "1. den čas na projektu     %d:%02d\n"//
 							+ "2. den mimo pracovní dobu: %d:%02d\n"//
@@ -287,14 +295,14 @@ public class Main {
 					calculatedTimes.day1.hoursBeforeWorkingTime, //
 					calculatedTimes.day1.minutesBeforeWorkingTime, //
 					calculatedTimes.day1.hoursAfterWorkingTime, //
-					calculatedTimes.day1.minutesAfterWorkingTime,//
-					calculatedTimes.day1.projectWorkingTimeHours,//
-					calculatedTimes.day1.projectWorkingTimeMinutes,//
+					calculatedTimes.day1.minutesAfterWorkingTime, //
+					calculatedTimes.day1.projectWorkingTimeHours, //
+					calculatedTimes.day1.projectWorkingTimeMinutes, //
 					calculatedTimes.day2.hoursAfterWorkingTime, //
 					calculatedTimes.day2.minutesAfterWorkingTime, //
 					calculatedTimes.day2.hoursBeforeWorkingTime, //
-					calculatedTimes.day2.minutesBeforeWorkingTime,//
-					calculatedTimes.day2.projectWorkingTimeHours,//
+					calculatedTimes.day2.minutesBeforeWorkingTime, //
+					calculatedTimes.day2.projectWorkingTimeHours, //
 					calculatedTimes.day2.projectWorkingTimeMinutes));
 		}
 	}
