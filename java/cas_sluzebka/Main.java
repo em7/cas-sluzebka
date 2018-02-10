@@ -173,8 +173,8 @@ public class Main {
 		resultTableTimeColumn.setWidth(100);
 		resultTableTimeColumn.setText("Čas");
 
-		Label lblNewLabel = new Label(resultGroup, SWT.NONE);
-		lblNewLabel.setText("Verze 1.0.0 (180207-010)");
+		Label versionLabel = new Label(resultGroup, SWT.NONE);
+		versionLabel.setText("Verze 1.0.0 (180210-01)");
 
 		TabItem settingsTab = new TabItem(tabFolder, SWT.NONE);
 		settingsTab.setText("Nastavení");
@@ -254,7 +254,11 @@ public class Main {
 			public void run() {
 				try {
 					logic.initialize();
-					System.out.println(String.format("[TRACE] %d: logic initialized", System.nanoTime()));
+					
+					if (trace) {
+						System.out.println(String.format("[TRACE] %d: logic initialized", System.nanoTime()));	
+					}
+					
 					if (display != null) {
 						display.asyncExec(() -> {
 							calculateButton.setEnabled(true);
