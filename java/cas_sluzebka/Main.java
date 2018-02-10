@@ -1,10 +1,8 @@
 package cas_sluzebka;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -320,47 +318,56 @@ public class Main {
 		if (calculatedTimes.day2 == null) {
 			TableItem outOfWorkHours = new TableItem(resultTable, SWT.DEFAULT);
 			outOfWorkHours.setText(0, "Mimo pracovní dobu");
-			outOfWorkHours.setText(1, String.format("%d:%02d", calculatedTimes.day1.hoursBeforeWorkingTime,
+			outOfWorkHours.setText(1, String.format("%d:%02d",
+					calculatedTimes.day1.hoursBeforeWorkingTime,
 					calculatedTimes.day1.minutesBeforeWorkingTime));
 
 			TableItem inWorkHours = new TableItem(resultTable, SWT.DEFAULT);
 			inWorkHours.setText(0, "V pracovní době");
-			inWorkHours.setText(1, String.format("%d:%02d", calculatedTimes.day1.hoursAfterWorkingTime,
+			inWorkHours.setText(1, String.format("%d:%02d",
+					calculatedTimes.day1.hoursAfterWorkingTime,
 					calculatedTimes.day1.minutesAfterWorkingTime));
 
 			TableItem projectHours = new TableItem(resultTable, SWT.DEFAULT);
 			projectHours.setText(0, "Čas na projektu");
-			projectHours.setText(1, String.format("%d:%02d", calculatedTimes.day1.projectWorkingTimeHours,
+			projectHours.setText(1, String.format("%d:%02d",
+					calculatedTimes.day1.projectWorkingTimeHours,
 					calculatedTimes.day1.projectWorkingTimeMinutes));
 		} else {
 			TableItem outOfWorkHours1 = new TableItem(resultTable, SWT.DEFAULT);
 			outOfWorkHours1.setText(0, "1. den mimo pracovní dobu");
-			outOfWorkHours1.setText(1, String.format("%d:%02d", calculatedTimes.day1.hoursBeforeWorkingTime,
+			outOfWorkHours1.setText(1, String.format("%d:%02d",
+					calculatedTimes.day1.hoursBeforeWorkingTime,
 					calculatedTimes.day1.minutesBeforeWorkingTime));
 
 			TableItem inWorkHours1 = new TableItem(resultTable, SWT.DEFAULT);
 			inWorkHours1.setText(0, "1. den v pracovní době");
-			inWorkHours1.setText(1, String.format("%d:%02d", calculatedTimes.day1.hoursAfterWorkingTime,
+			inWorkHours1.setText(1, String.format("%d:%02d",
+					calculatedTimes.day1.hoursAfterWorkingTime,
 					calculatedTimes.day1.minutesAfterWorkingTime));
 
 			TableItem projectHours1 = new TableItem(resultTable, SWT.DEFAULT);
 			projectHours1.setText(0, "1. den čas na projektu");
-			projectHours1.setText(1, String.format("%d:%02d", calculatedTimes.day1.projectWorkingTimeHours,
+			projectHours1.setText(1, String.format("%d:%02d",
+					calculatedTimes.day1.projectWorkingTimeHours,
 					calculatedTimes.day1.projectWorkingTimeMinutes));
 
 			TableItem outOfWorkHours2 = new TableItem(resultTable, SWT.DEFAULT);
 			outOfWorkHours2.setText(0, "2. den mimo pracovní dobu");
-			outOfWorkHours2.setText(1, String.format("%d:%02d", calculatedTimes.day2.hoursAfterWorkingTime,
+			outOfWorkHours2.setText(1, String.format("%d:%02d",
+					calculatedTimes.day2.hoursAfterWorkingTime,
 					calculatedTimes.day2.minutesAfterWorkingTime));
 
 			TableItem inWorkHours2 = new TableItem(resultTable, SWT.DEFAULT);
 			inWorkHours2.setText(0, "2. den v pracovní době");
-			inWorkHours2.setText(1, String.format("%d:%02d", calculatedTimes.day2.hoursBeforeWorkingTime,
+			inWorkHours2.setText(1, String.format("%d:%02d",
+					calculatedTimes.day2.hoursBeforeWorkingTime,
 					calculatedTimes.day2.minutesBeforeWorkingTime));
 
 			TableItem projectHours2 = new TableItem(resultTable, SWT.DEFAULT);
 			projectHours2.setText(0, "2 den čas na projektu");
-			projectHours2.setText(1, String.format("%d:%02d", calculatedTimes.day2.projectWorkingTimeHours,
+			projectHours2.setText(1, String.format("%d:%02d",
+					calculatedTimes.day2.projectWorkingTimeHours,
 					calculatedTimes.day2.projectWorkingTimeMinutes));
 		}
 
