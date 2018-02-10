@@ -1,6 +1,16 @@
 # Introduction to source of cas-sluzebka
 
-This project is combined Java/Clojure project. Leiningen is used as a build tool.
+This project is combined Java/Clojure project. [Leiningen](https://leiningen.org/) is used as a build tool.
+Build is platform specific, use platform profile from `project.clj`.
+
+Windows: `lein with-profile +win64 uberjar`
+
+Linux: `lein with-profile +linux-gtk64 uberjar`
+
+Mac: `lein with-profile +macoxs-cocoa64 uberjar`
+
+This create a self-contained executable jar file in `target/uberjar`. Directory `launchers` contains platform specific launch scripts. Rename the jar file to match the name in script and use appropriate launcher.
+
 
 ## Clojure
 
