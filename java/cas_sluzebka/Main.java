@@ -20,6 +20,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 
 public class Main {
 
@@ -34,8 +37,18 @@ public class Main {
 
 	private final Logic logic = new Logic();
 	private Display display;
-	private StyledText resultText;
 	private Spinner workTimeBreakMinSpinner;
+	private Table resultTable;
+
+	private boolean trace;
+	private Label calculateResultInitializingLabel;
+	private Button calculateButton;
+
+	public Main() {
+		if (System.getProperty("trace") != null) {
+			trace = true;
+		}
+	}
 
 	/**
 	 * Launch the application.
@@ -72,8 +85,8 @@ public class Main {
 	 */
 	protected void createContents() {
 		shell = new Shell();
-		shell.setMinimumSize(new Point(380, 480));
-		shell.setSize(381, 480);
+		shell.setMinimumSize(new Point(350, 600));
+		shell.setSize(350, 600);
 		shell.setText("Čas na cestě v/mimo prac. dobu");
 		shell.setLayout(new FillLayout(SWT.HORIZONTAL));
 
@@ -129,7 +142,15 @@ public class Main {
 		resultGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		resultGroup.setText("Výsledek");
 
-		Button calculateButton = new Button(resultGroup, SWT.NONE);
+		Composite calculateResultComposite = new Composite(resultGroup, SWT.NONE);
+		GridLayout gl_calculateResultComposite = new GridLayout(2, false);
+		gl_calculateResultComposite.marginHeight = 0;
+		gl_calculateResultComposite.marginWidth = 0;
+		calculateResultComposite.setLayout(gl_calculateResultComposite);
+		calculateResultComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+
+		calculateButton = new Button(calculateResultComposite, SWT.NONE);
+		calculateButton.setEnabled(false);
 		calculateButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -138,10 +159,21 @@ public class Main {
 		});
 		calculateButton.setText("Spočítat");
 
-		resultText = new StyledText(resultGroup, SWT.BORDER | SWT.WRAP);
-		resultText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		// TODO fix font
-		resultText.setFont(new Font(display, "Courier New", 10, SWT.NORMAL));
+		calculateResultInitializingLabel = new Label(calculateResultComposite, SWT.NONE);
+		calculateResultInitializingLabel.setText("Probíhá inicializace...");
+
+		resultTable = new Table(resultGroup, SWT.BORDER | SWT.FULL_SELECTION);
+		resultTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		resultTable.setHeaderVisible(true);
+		resultTable.setLinesVisible(true);
+
+		TableColumn resultTableTimeLabelColumn = new TableColumn(resultTable, SWT.RIGHT);
+		resultTableTimeLabelColumn.setText("Časový údaj");
+		resultTableTimeLabelColumn.setWidth(100);
+
+		TableColumn resultTableTimeColumn = new TableColumn(resultTable, SWT.LEFT);
+		resultTableTimeColumn.setWidth(100);
+		resultTableTimeColumn.setText("Čas");
 
 		Label lblNewLabel = new Label(resultGroup, SWT.NONE);
 		lblNewLabel.setText("Verze 1.0.0 (180207-010)");
@@ -170,16 +202,16 @@ public class Main {
 		Label workTimeBreakLabel = new Label(settingsComposite, SWT.NONE);
 		workTimeBreakLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		workTimeBreakLabel.setText("Přestávka v práci");
-		
+
 		Composite workTimeBreakPanel = new Composite(settingsComposite, SWT.NONE);
 		GridLayout gl_workTimeBreakPanel = new GridLayout(2, false);
 		gl_workTimeBreakPanel.marginWidth = 0;
 		workTimeBreakPanel.setLayout(gl_workTimeBreakPanel);
-		
+
 		workTimeBreakMinSpinner = new Spinner(workTimeBreakPanel, SWT.BORDER);
 		workTimeBreakMinSpinner.setMaximum(1440);
 		workTimeBreakMinSpinner.setSelection(30);
-		
+
 		Label workTimeBreakUnitLabel = new Label(workTimeBreakPanel, SWT.NONE);
 		workTimeBreakUnitLabel.setText("minut");
 		new Label(settingsComposite, SWT.NONE);
@@ -215,11 +247,22 @@ public class Main {
 	 */
 	private void initializeLogic() {
 
+		if (trace) {
+			System.out.println(String.format("[TRACE] %d: initializing logic", System.nanoTime()));
+		}
+
 		Runnable initLogicRunnable = new Runnable() {
 			@Override
 			public void run() {
 				try {
 					logic.initialize();
+					System.out.println(String.format("[TRACE] %d: logic initialized", System.nanoTime()));
+					if (display != null) {
+						display.asyncExec(() -> {
+							calculateButton.setEnabled(true);
+							calculateResultInitializingLabel.setVisible(false);
+						});
+					}
 				} catch (Exception e) {
 					displayExceptionInfo("Error during initializing logic.", e);
 				}
@@ -245,12 +288,11 @@ public class Main {
 				workTimeEndDateTime.getMinutes());
 
 		boolean otherDay = travelBackOtherDayCheckButton.getSelection();
-		
+
 		int workTimeBreakHours = workTimeBreakMinSpinner.getSelection() / 60;
 		int workTimebreakMins = workTimeBreakMinSpinner.getSelection() % 60;
 
-		AllTimesToCalc allTimes = new AllTimesToCalc(trip, tripBack, otherDay, workTimeBreakHours,
-				workTimebreakMins);
+		AllTimesToCalc allTimes = new AllTimesToCalc(trip, tripBack, otherDay, workTimeBreakHours, workTimebreakMins);
 		logic.calculateTimesAsync(allTimes, (calcOrEx) -> {
 			display.asyncExec(() -> displayTimesOrException(calcOrEx));
 		});
@@ -273,37 +315,57 @@ public class Main {
 	}
 
 	private void displayCalculatedTimes(CalculatedTimes calculatedTimes) {
+		resultTable.removeAll();
+
 		if (calculatedTimes.day2 == null) {
-			resultText.setText(String.format(//
-					"Mimo pracovní dobu: %d:%02d\n"//
-							+ "V pracovní době:    %d:%02d\n"//
-							+ "Čas na projektu:    %d:%02d", //
-					calculatedTimes.day1.hoursBeforeWorkingTime, //
-					calculatedTimes.day1.minutesBeforeWorkingTime, //
-					calculatedTimes.day1.hoursAfterWorkingTime, //
-					calculatedTimes.day1.minutesAfterWorkingTime, //
-					calculatedTimes.day1.projectWorkingTimeHours, //
+			TableItem outOfWorkHours = new TableItem(resultTable, SWT.DEFAULT);
+			outOfWorkHours.setText(0, "Mimo pracovní dobu");
+			outOfWorkHours.setText(1, String.format("%d:%02d", calculatedTimes.day1.hoursBeforeWorkingTime,
+					calculatedTimes.day1.minutesBeforeWorkingTime));
+
+			TableItem inWorkHours = new TableItem(resultTable, SWT.DEFAULT);
+			inWorkHours.setText(0, "V pracovní době");
+			inWorkHours.setText(1, String.format("%d:%02d", calculatedTimes.day1.hoursAfterWorkingTime,
+					calculatedTimes.day1.minutesAfterWorkingTime));
+
+			TableItem projectHours = new TableItem(resultTable, SWT.DEFAULT);
+			projectHours.setText(0, "Čas na projektu");
+			projectHours.setText(1, String.format("%d:%02d", calculatedTimes.day1.projectWorkingTimeHours,
 					calculatedTimes.day1.projectWorkingTimeMinutes));
 		} else {
-			resultText.setText(String.format(//
-					"1. den mimo pracovní dobu: %d:%02d\n"//
-							+ "1. den v pracovní době:    %d:%02d\n"//
-							+ "1. den čas na projektu     %d:%02d\n"//
-							+ "2. den mimo pracovní dobu: %d:%02d\n"//
-							+ "2. den v pracovní době:    %d:%02d\n"//
-							+ "2. den čas na projektu     %d:%02d\n", //
-					calculatedTimes.day1.hoursBeforeWorkingTime, //
-					calculatedTimes.day1.minutesBeforeWorkingTime, //
-					calculatedTimes.day1.hoursAfterWorkingTime, //
-					calculatedTimes.day1.minutesAfterWorkingTime, //
-					calculatedTimes.day1.projectWorkingTimeHours, //
-					calculatedTimes.day1.projectWorkingTimeMinutes, //
-					calculatedTimes.day2.hoursAfterWorkingTime, //
-					calculatedTimes.day2.minutesAfterWorkingTime, //
-					calculatedTimes.day2.hoursBeforeWorkingTime, //
-					calculatedTimes.day2.minutesBeforeWorkingTime, //
-					calculatedTimes.day2.projectWorkingTimeHours, //
+			TableItem outOfWorkHours1 = new TableItem(resultTable, SWT.DEFAULT);
+			outOfWorkHours1.setText(0, "1. den mimo pracovní dobu");
+			outOfWorkHours1.setText(1, String.format("%d:%02d", calculatedTimes.day1.hoursBeforeWorkingTime,
+					calculatedTimes.day1.minutesBeforeWorkingTime));
+
+			TableItem inWorkHours1 = new TableItem(resultTable, SWT.DEFAULT);
+			inWorkHours1.setText(0, "1. den v pracovní době");
+			inWorkHours1.setText(1, String.format("%d:%02d", calculatedTimes.day1.hoursAfterWorkingTime,
+					calculatedTimes.day1.minutesAfterWorkingTime));
+
+			TableItem projectHours1 = new TableItem(resultTable, SWT.DEFAULT);
+			projectHours1.setText(0, "1. den čas na projektu");
+			projectHours1.setText(1, String.format("%d:%02d", calculatedTimes.day1.projectWorkingTimeHours,
+					calculatedTimes.day1.projectWorkingTimeMinutes));
+
+			TableItem outOfWorkHours2 = new TableItem(resultTable, SWT.DEFAULT);
+			outOfWorkHours2.setText(0, "2. den mimo pracovní dobu");
+			outOfWorkHours2.setText(1, String.format("%d:%02d", calculatedTimes.day2.hoursAfterWorkingTime,
+					calculatedTimes.day2.minutesAfterWorkingTime));
+
+			TableItem inWorkHours2 = new TableItem(resultTable, SWT.DEFAULT);
+			inWorkHours2.setText(0, "2. den v pracovní době");
+			inWorkHours2.setText(1, String.format("%d:%02d", calculatedTimes.day2.hoursBeforeWorkingTime,
+					calculatedTimes.day2.minutesBeforeWorkingTime));
+
+			TableItem projectHours2 = new TableItem(resultTable, SWT.DEFAULT);
+			projectHours2.setText(0, "2 den čas na projektu");
+			projectHours2.setText(1, String.format("%d:%02d", calculatedTimes.day2.projectWorkingTimeHours,
 					calculatedTimes.day2.projectWorkingTimeMinutes));
+		}
+
+		for (TableColumn column : resultTable.getColumns()) {
+			column.pack();
 		}
 	}
 
