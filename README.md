@@ -21,7 +21,7 @@ Latest version is [1.0.0](https://github.com/em7/cas-sluzebka/releases/tag/v1.0.
 
 3 times need to be calculated for a typical business trip. Travel time outside business hours, travel time inside and time spent working.
 
-From a scientific analysis which I just made up follows that average programmer spent 20 seconds counting the times. This can mean a lot for a mid-sized company which has 350 employees each travelling 6 times a yer.
+From a scientific analysis which I just made up follows that average programmer spent 20 seconds counting the times. This can mean a lot for a mid-sized company which has 350 employees each travelling 6 times a year.
 
 ```
 Total business trips: 350 x 6 = 2,100 trips
